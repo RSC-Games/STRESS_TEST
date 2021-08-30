@@ -16,7 +16,9 @@ This program works by spawning double the amount of processes that the processor
 
 Torture testing is good for identifying stable overclocks (systems often lock up the second they reach their overclock speed if it not stable). This can be run on Raspberry Pis, x64 Desktops/Laptops and eventually Macs (though whether you can overclock a Mac is unknown to me). It's also good for cooling tests, so if you think you have cooling problems, run this. It should help you identify and possibly fix the problem.
 
-# Compiling instructions (Windows)
+# Compiling instructions 
+
+**Windows (NT 10.0)**
 
 If you don't already have Python, install the latest version from [python.org](url). Once the install is complete, open Windows Powershell run this command: 
 _pip3 install pyinstaller_ 
@@ -28,7 +30,7 @@ _pyinstaller --onefile STRESS_TEST.py_
 Now look in the dist folder in your current working directory and there is your executable. Feel free to do anything you want with it (except you must credit the original writers/maintainers).
 
 
-Linux (Debian based)
+**Linux (Debian based)**
 
 You should already have Python installed on Debian. But, if you don't, then open bash and type this:
 _sudo apt-get install python3_
