@@ -1,93 +1,77 @@
 # STRESS_TEST: Stresses the CPU of your PC.
-
-# Import utils for use
-import os, sys, time, math, random, multiprocessing as mp
 from multiprocessing import Process
+import multiprocessing as mp
+import random
+import time
+import math
+import sys
+import os
 
-# Define CPU Stress code block..
+# Use at least double the available cores as threads. Comes at the cost of higher memory use.
+CORE_MULT = 2
+
+# Here lies the actual math that burns the CPU.
 def cpuburn():
     while True:
         op = random.randint(0, 6)
+        operand = random.randint(1283901827894, 12803803952045394850949045)
         if (op == 0):
-            math.acosh(9223372036854775807)
+            math.acosh(operand)
         elif (op == 1):
-            math.factorial(2147483647)
+            math.factorial(math.min(operand, 2147483647))
         elif (op == 2):
-            math.sqrt(9223372036854775807)
+            math.sqrt(operand)
         elif (op == 3):
-            math.log(9223372036854775807)
+            math.log(operand)
         elif (op == 4):
-            math.cos(9223372036854775807)
+            math.cos(operand)
         elif (op == 5):
-            math.pow(2, 256)
+            math.pow(operand, 512)
+
 
 # Prevent subprocess modules from executing this code block.
 if __name__ == "__main__" and not os.path.exists("STRESS_TEST.exe.lock"):
-    
-    # Get initialization parameters from the user.
     dur_time = float(input("How long do you want to run the stress test?\n> "))
 
-    # Acquire artificial file lock. Since this resource will have multiple processes utilizing it, we do not want to acquire a real lock.
+    # Hacky lazy way to avoid using IPC and ensure the subprocesses know what to execute.
     file = open("STRESS_TEST.exe.lock", "w")
     file.close()
 
-
-    # Initialize use variables
-    current_time = time.time()
-    end_time = current_time + dur_time
     cores = os.cpu_count()
-    core_mult = 2
-    mp.set_start_method("spawn")
-
-    # Create n threads to tax the CPU as much as possible.
-
     print("Your device has " + str(cores) + " CPU cores available.")
 
-    # Create CPU hogs and allocate space for them.
+    # Prepare the stress threads.
+    current_time = time.time()
+    end_time = current_time + dur_time
+    cores *= CORE_MULT  # Threads to spawn.
+    mp.set_start_method("spawn")
     threads = []
-    print("Creating " + str(cores * core_mult) + " threads.")
+    print("Creating " + str(cores) + " threads.")
 
-    for core in range(0, cores * core_mult):
+    for core in range(0, cores):
         threads.append(Process(target=cpuburn, args=()))
 
-    # Inform user of threads.
+    # Start the threads.
     print("Created " + str(cores * core_mult) + " threads.")
     print("Starting CPU stress threads.")
 
     for thread in threads:
         #print("Started " + thread.name)
         thread.start()
-        
-    print("Executing CPU stress threads.")
-        
-    # Announce presence of threads and wait for threads to exit.
 
+    # Stress time!
+    print("Executing CPU stress threads.")
     time.sleep(dur_time)
 
+    # Now get rid of the stress threads.
     if time.time() >= end_time:
         print("Stress test complete.")
         for thread in threads:
-            #print("Terminating " + thread.name)
             thread.kill()
 
-    # Release lock after code execution complete.
+    # Get rid of the fake lock.
     os.unlink("STRESS_TEST.exe.lock")
 
-# The compiled binary makes all of the python subprocesses think that they are the main thread.
+# Pyinstaller threads ignore the launch arg, so the "lockfile" is used instead.
 else:
-    while True:
-        op = random.randint(0, 6)
-        if (op == 0):
-            math.acosh(9223372036854775807)
-        elif (op == 1):
-            math.factorial(2147483647)
-        elif (op == 2):
-            math.sqrt(9223372036854775807)
-        elif (op == 3):
-            math.log(9223372036854775807)
-        elif (op == 4):
-            math.cos(9223372036854775807)
-        elif (op == 5):
-            math.pow(2, 256)
-    
-
+    cpuburn()
